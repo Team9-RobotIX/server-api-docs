@@ -10,5 +10,5 @@ human-friendly vizualisation of the API.
 
 ## Usage
 
-Run `aglio -i main.apib -s` to start a live reload server that parses and displays the documentation
+Run `aglio -i docs.apib -s` to start a live reload server that parses and displays the documentation
 using [Aglio](https://github.com/danielgtaylor/aglio).
