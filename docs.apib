@@ -40,6 +40,7 @@ Authentication is checked by validating the bearer token in `Authorization` head
 + id: `54` (required, number) - ID of the target
 + name: `Reception` (required, string) - Name of the target
 + description: `The first-floor reception in Block A` (string) - Description of the target
++ color: `red` (required, nullable) - Color of the target
 
 ## UserCore
 + id: `22` (required, number) - ID of the user
@@ -152,6 +153,71 @@ Valid fields to update are: `state`.
 
       + Attributes (BadRequestError)
           + friendly: `There's no delivery with that ID!`
+
+# Group Targets
+
+## Targets [/targets]
+
+### Get all targets [GET]
+
++ Response 200
+
+    + Attributes (array[Target])
+
+### Add target [POST]
+
++ Request
+
+    + Attributes
+        + name: `Dr. Jack's office` (string, required)
+        + description (string, nullable)
+        + color: `red` (string)
+
++ Response 200
+
+    + Attributes (array[Target])
+
++ Response 400
+
+    + Attributes (BadRequestError)
+        + friendly: `Target information is badly formatted`
+
+## Target [/target/{id}]
+
++ Parameters
+    + id: `4` - ID of target
+
+### Retrieve target [GET]
+
++ Response 200
+
+    + Attributes (array[Target])
+
++ Response 404
+
+    + Attributes (NoResourceError)
+        + friendly: `This target does not exist`
+
+### Partially update target [PATCH]
+
++ Request update colour mapping
+
+    + Attributes
+        + color: `red` (string)
+
++ Response 200
+
+    + Attributes (Target)
+
++ Response 400
+
+    + Attributes (BadRequestError)
+        + friendly: `Target information is badly formatted`
+
++ Response 404
+
+    + Attributes (NoResourceError)
+        + friendly: `This target does not exist`
 
 # Group Authentication
 
