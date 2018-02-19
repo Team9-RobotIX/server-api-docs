@@ -4,10 +4,94 @@ HOST: http://18.219.63.23/production
 # FloBot Server API
 This document outlines the routes for the FloBot web server, stored on AWS.
 
+# Data Structures
+
+## Delivery
++ id: `23` (required, number)
++ from (required, UserCore)
++ to (required, UserCore)
++ state (enum) - Represents the state of the delivery
+    + IN_QUEUE - Delivery has not been started
+    + IN_PROGRESS - Delivery is in transit
+    + AWAITING_AUTHENTICATION - Waiting for user to authenticate with the QR
+    + AWAITING_PICKUP - Waiting for user to confirm they have picked up their package
+    + COMPLETED - Delivery has been completed
+    + UNKNOWN - Error state
++ priority: `0` (number, required)
++ packageList (array[Package])
+
+## PackageCore
++ name: `Blood sample` (required, string)
++ description: `Blood sample for patient Jane Doe` (string)
++ priority: 0 (number, required) - The lower, the higher the priority
++ minTemp: `12.0` (number) - Minimum temperature of the package, in degrees celsius
++ maxTemp: `24.0` (number) - Maximum temperature of the package, in degrees celsius
++ timeLimit: `3600` (number) - Maximum time for delivery, in seconds
+
+## Package (PackageCore)
++ id: `11` (required, number)
++ from (required, Target)
++ to (required, Target)
++ sender (required, UserCore)
++ recipient (required, UserCore)
+
+## Target
++ id: `54` (required, number) - ID of the target
++ name: `Reception` (required, string) - Name of the target
++ description: `The first-floor reception in Block A` (string) - Description of the target
+
+## UserCore
++ id: `22` (required, number) - ID of the user
++ name: `Dr. John Smith` (required, string) - Name of the user
+
+## User (UserCore)
++ email: `jsmith@some-hospital.co.uk` (required, string)
+
+## BadRequestError
++ code: `400` (number, required)
++ error: `Your request is malformed` (string, required)
+
+## UnauthenticatedError
++ code: `401` (number, required)
++ error: `You must authenticate in order to access this resource` (string, required)
+
+## ForbiddenError
++ code: `403` (number, required)
++ error: `You do not have permission to access this resource` (string, required)
+
 ## All deliveries [/deliveries]
 This resource collects data on deliveries
 
-# GET /message
-+ Response 200 (text/plain)
+### GET
 
-        Hello World!
++ Response 200
+
+      + Attributes (array[Delivery])
+
++ Response 401
+
+      + Attributes (UnauthenticatedError)
+
+### POST
+
+This request takes in the IDs for the sender and recipient Users and the source and destination Targets and creates
+a new delivery in the server.
+
+The server responds with the newly created package object.
+
++ Request
+
+      + Attributes (PackageCore)
+          + from: `23` (required, number) - ID of departure Target
+          + to: `12` (required, number) - ID of arrival Target
+          + sender: `22` (required, number) - ID of sender User
+          + recipient: `23` (required, number) - ID of recipient User
+
++ Response 200
+
+      + Attributes (Delivery)
+
+
++ Response 401
+
+      + Attributes (UnauthenticatedError)
