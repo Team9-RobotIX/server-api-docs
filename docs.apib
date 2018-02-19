@@ -107,9 +107,28 @@ The server responds with the newly created package object.
 ## Delivery [/delivery/{id}]
 
 + Parameters
-    + id: `12`
+    + id: `12` - ID of the delivery object being retrieved
 
 ### Get delivery information [GET]
+
++ Response 200
+
+      + Attributes (Delivery)
+
++ Response 404
+
+      + Attributes (BadRequestError)
+          + friendly: `There's no delivery with that ID!`
+
+### Partially update delivery [PATCH]
+Partially updates the resource, replacing the supplied fields with the new ones.
+
+Valid fields to update are: `state`.
+
++ Request with new state
+
+      + Attributes
+          + state: `IN_PROGRESS`
 
 + Response 200
 
@@ -118,13 +137,18 @@ The server responds with the newly created package object.
 + Response 400
 
       + Attributes (BadRequestError)
+          + friendly: `Delivery object is malformed.`
+
++ Response 404
+
+      + Attributes (NoResourceError)
           + friendly: `There's no delivery with that ID!`
 
 ### Delete delivery [DELETE]
 
 + Response 200
 
-+ Response 400
++ Response 404
 
       + Attributes (BadRequestError)
           + friendly: `There's no delivery with that ID!`
