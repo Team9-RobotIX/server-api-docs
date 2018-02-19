@@ -97,6 +97,31 @@ The server responds with the newly created package object.
 
       + Attributes (Delivery)
 
+## Delivery [/delivery/{id}]
+
++ Parameters
+    + id: `12`
+
+### Get delivery information [GET]
+
++ Response 200
+
+      + Attributes (Delivery)
+
++ Response 400
+
+      + Attributes (BadRequestError)
+          + friendly: `There's no delivery with that ID!`
+
+### Delete delivery [DELETE]
+
++ Response 200
+
++ Response 400
+
+      + Attributes (BadRequestError)
+          + friendly: `There's no delivery with that ID!`
+
 # Group Authentication
 
 ## Login [/login]
