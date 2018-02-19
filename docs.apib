@@ -267,15 +267,14 @@ Allows the user to register. Returns a bearer token if successful.
 # Group Robot
 This resource group exposes the required routes for the vision system to interface with the robot.
 
-## Instructions [/instructions]
+## Instructions [/instructions{?limit}]
 Exposes the current instruction issued to the robot, for reading or modification.
 
 ### Retrieve instruction queue [GET]
-This route is meant to be polled by the robot.
 
 + Response 200
 
-    + Attributes (Instruction)
+    + Attributes (array[Instruction])
 
 ### Add instruction(s) to queue [POST]
 Appends one or more instructions to the queue.
@@ -297,6 +296,21 @@ Appends one or more instructions to the queue.
 + Response 200
 
     + Attributes (array)
+
+### Batch retrieval [GET /instructions/batch{?limit}]
+Makes a single, batch retrieval of instructions (limited by a number) joined with the correction parameter, if any.
+This route is mean to avoid the overhead of two requests being issued by the robot, seeing that it has very limited
+connectivity capabilities.
+
++ Parameters
+    + limit: `1` (number, optional) - The maximum number of instructions to return
+
++ Response 200
+
+    + Attributes
+        + target: (array[Instruction])
+        + correction
+            + angle: `-10`
 
 ## Instruction [/instruction/{id}]
 Exposes the current instruction issued to the robot, for reading or modification.
