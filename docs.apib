@@ -2,7 +2,8 @@ FORMAT: 1A
 HOST: http://18.219.63.23/production
 
 # FloBot Server API
-This document outlines the routes for the FloBot web server, stored on AWS.
+This document outlines the routes for the FloBot web server, stored on AWS. Most routes require the user to be authenticated.
+Authentication is checked by validating the bearer token in `Authorization` header.
 
 # Data Structures
 
@@ -45,7 +46,7 @@ This document outlines the routes for the FloBot web server, stored on AWS.
 + name: `Dr. John Smith` (required, string) - Name of the user
 
 ## User (UserCore)
-+ email: `jsmith@some-hospital.co.uk` (required, string)
++ username: `jsmith` (required, string)
 
 ## BadRequestError
 + code: `400` (number, required)
@@ -59,8 +60,10 @@ This document outlines the routes for the FloBot web server, stored on AWS.
 + code: `403` (number, required)
 + error: `You do not have permission to access this resource` (string, required)
 
+# Group Deliveries
+
 ## All deliveries [/deliveries]
-This resource collects data on deliveries
+This resource collects data on deliveries.
 
 ### GET
 
@@ -95,3 +98,48 @@ The server responds with the newly created package object.
 + Response 401
 
       + Attributes (UnauthenticatedError)
+
+# Group Authentication
+
+## Login [/login]
+Allows the user to login. Returns a bearer token if successful.
+
+### POST
+
++ Request
+
+      + Attributes
+          + username: `jdoe` (required, string)
+          + password: `password123` (required, string)
+
++ Response 200
+
+      + Attributes
+          + bearer: `c6e1f9d0-a241-4e29-8baa-2625f1e3a779`
+
++ Response 401
+
+      + Attributes (UnauthenticatedError)
+          + friendly: `Incorrect user/password combination`
+
+## Register [/register]
+Allows the user to register. Returns a bearer token if successful.
+
+### POST
+
++ Request
+
+      + Attributes
+          + username: `jdoe` (required, string)
+          + name: `Dr. John Doe` (required, string)
+          + password: `password123` (required, string)
+
++ Response 200
+
+      + Attributes
+          + bearer: `c6e1f9d0-a241-4e29-8baa-2625f1e3a779`
+
++ Response 401
+
+      + Attributes (UnauthenticatedError)
+          + friendly: `Incorrect user/password combination`
