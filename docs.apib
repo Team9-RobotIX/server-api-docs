@@ -54,6 +54,9 @@ Authentication is checked by validating the bearer token in `Authorization` head
     + TURN - Orders the robot to turn. Payload denotes the target bearing, in degrees, from `-180` to `180`
 + value: `100` - Represents the payload associated with the instruction. Some instructions may ignore this payload.
 
+## Correction
++ angle: `-10` (number, required) - New angular correction
+
 ## BadRequestError
 + code: `400` (number, required)
 + error: `Your request is malformed` (string, required)
@@ -65,6 +68,10 @@ Authentication is checked by validating the bearer token in `Authorization` head
 ## ForbiddenError
 + code: `403` (number, required)
 + error: `You do not have permission to access this resource` (string, required)
+
+## NoResourceError
++ code: `404` (number, required)
++ error: `The requested resource does not exist` (string, required)
 
 # Group Deliveries
 This resource group exposes the routes required by the app to access, modify, create and delete deliveries.
@@ -170,26 +177,99 @@ Allows the user to register. Returns a bearer token if successful.
 # Group Robot
 This resource group exposes the required routes for the vision system to interface with the robot.
 
-## Instruction [/instruction]
+## Instructions [/instructions]
 Exposes the current instruction issued to the robot, for reading or modification.
 
-### GET
+### Retrieve instruction queue [GET]
 This route is meant to be polled by the robot.
 
 + Response 200
 
     + Attributes (Instruction)
 
-### POST
-Updates the current instruction issued to the robot.
+### Add instruction(s) to queue [POST]
+Appends one or more instructions to the queue.
 
-+ Request
++ Request with a single instruction
 
     + Attributes (Instruction)
+
++ Request with multiple instructions
+
+    + Attributes (array[Instruction])
+
++ Response 200
+
+    + Attributes (array[Instruction])
+
+### Clear entire instruction queue [DELETE]
+
++ Response 200
+
+    + Attributes (array)
+
+## Instruction [/instruction/{id}]
+Exposes the current instruction issued to the robot, for reading or modification.
+
++ Parameters
+    + id: `0` - Specifies the index of the instruction in the queue
+
+### Retrieve instruction at index from queue [GET]
+This route is meant to be polled by the robot.
 
 + Response 200
 
     + Attributes (Instruction)
+
++ Response 404
+
+    + Attributes (NoResourceError)
+        + friendly: `This instruction does not exist`
+
+### Remove instruction from queue [DELETE]
+Removes this instruction from the queue. Meant to be used by the robot once an instruction has been completed.
+
++ Response 200
+
+## Correction [/correction]
+Exposes a mechanism to issue angle corrections to the robot.
+
+### Retrieve correction [GET]
+
++ Response 200
+
+    + Attributes (Correction)
+
++ Response 404
+
+    + Attributes (NoResourceError)
+        + friendly: `No correction has been issued!`
+
+### Issue a correction [POST]
+Issues a new correction to the angle of the robot. If a correction has already been issued, returns an error.
+
++ Request
+
+    + Attributes (Correction)
+
++ Response 200
+
+    + Attributes (Correction)
+
++ Response 400
+
+    + Attributes (BadRequestError)
+        + friendly: `A correction has already been issued!`
+
+### Delete correction [DELETE]
+Should be used once the correction has been executed by the robot.
+
++ Response 200
+
++ Response 404
+
+    + Attributes (NoResourceError)
+        + friendly: `No correction has been issued!`
 
 ## Locking [/lock]
 Exposes the state of the locking mechanism, for reading or modification.
