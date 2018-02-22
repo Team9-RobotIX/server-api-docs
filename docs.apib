@@ -81,7 +81,7 @@ This resource collects data on deliveries.
 
 ### POST
 
-This request takes in the IDs for the sender and recipient Users and the source and destination Targets and creates
+This request takes in the IDs for the source and destination Targets and creates
 a new delivery in the server.
 
 The server responds with the newly created package object.
@@ -91,8 +91,6 @@ The server responds with the newly created package object.
       + Attributes (PackageCore)
           + from: `23` (required, number) - ID of departure Target
           + to: `12` (required, number) - ID of arrival Target
-          + sender: `22` (required, number) - ID of sender User
-          + recipient: `23` (required, number) - ID of recipient User
 
 + Response 200
 
