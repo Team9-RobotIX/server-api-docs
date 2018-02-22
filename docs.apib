@@ -9,8 +9,6 @@ Authentication is checked by validating the bearer token in `Authorization` head
 
 ## Delivery
 + id: `23` (required, number)
-+ from (required, UserCore)
-+ to (required, UserCore)
 + state (enum) - Represents the state of the delivery
     + IN_QUEUE - Delivery has not been started
     + IN_PROGRESS - Delivery is in transit
@@ -25,16 +23,11 @@ Authentication is checked by validating the bearer token in `Authorization` head
 + name: `Blood sample` (required, string)
 + description: `Blood sample for patient Jane Doe` (string)
 + priority: 0 (number, required) - The lower, the higher the priority
-+ minTemp: `12.0` (number) - Minimum temperature of the package, in degrees celsius
-+ maxTemp: `24.0` (number) - Maximum temperature of the package, in degrees celsius
-+ timeLimit: `3600` (number) - Maximum time for delivery, in seconds
 
 ## Package (PackageCore)
 + id: `11` (required, number)
 + from (required, Target)
 + to (required, Target)
-+ sender (required, UserCore)
-+ recipient (required, UserCore)
 
 ## Target
 + id: `54` (required, number) - ID of the target
