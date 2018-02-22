@@ -17,6 +17,8 @@ Authentication is checked by validating the bearer token in `Authorization` head
     + COMPLETED - Delivery has been completed
     + UNKNOWN - Error state
 + priority: `0` (number, required)
++ from (required, Target)
++ to (required, Target)
 + packageList (array[Package])
 
 ## PackageCore
@@ -26,8 +28,6 @@ Authentication is checked by validating the bearer token in `Authorization` head
 
 ## Package (PackageCore)
 + id: `11` (required, number)
-+ from (required, Target)
-+ to (required, Target)
 
 ## Target
 + id: `54` (required, number) - ID of the target
@@ -94,7 +94,7 @@ The server responds with the newly created package object.
 
 + Response 200
 
-      + Attributes (Delivery)
+      + Attributes (array[Delivery])
 
 ### Clear queue [DELETE]
 
