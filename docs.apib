@@ -11,14 +11,21 @@ Authentication is checked by validating the bearer token in `Authorization` head
 + id: `23` (required, number)
 + state (enum) - Represents the state of the delivery
     + IN_QUEUE - Delivery has not been started
-    + IN_PROGRESS - Delivery is in transit
-    + AWAITING_AUTHENTICATION - Waiting for user to authenticate with the QR
-    + AWAITING_PICKUP - Waiting for user to confirm they have picked up their package
-    + COMPLETED - Delivery has been completed
+    + MOVING_TO_SOURCE - Robot is in transit to source target
+    + AWAITING_AUTHENTICATION_SENDER - Robot is waiting for the sender to authenticate
+    + AWAITING_PACKAGE_LOAD - Robot is awaiting the sender to signal they are done loading the package
+    + PACKAGE_LOAD_COMPLETE - Sender has signalled they are done loading the package
+    + MOVING_TO_DESTINATION - Robot is in transit to destination target
+    + AWAITING_AUTHENTICATION_RECEIVER - Robot is waiting for the receiver to authenticate
+    + AWAITING_PACKAGE_RETRIEVAL - Robot is awaiting the receiver to signal they are done picking up the package
+    + PACKAGE_RETRIEVAL_COMPLETE - Receiver has signalled they are done picking up the package
+    + COMPLETE - Delivery has been completed
     + UNKNOWN - Error state
 + priority: `0` (number, required)
 + from (required, Target)
 + to (required, Target)
++ sender: `jdoe` (required, string)
++ receiver: `drseuss` (required, string)
 + packageList (array[Package])
 
 ## PackageCore
@@ -34,13 +41,6 @@ Authentication is checked by validating the bearer token in `Authorization` head
 + name: `Reception` (required, string) - Name of the target
 + description: `The first-floor reception in Block A` (string) - Description of the target
 + color: `red` (required, nullable) - Color of the target
-
-## UserCore
-+ id: `22` (required, number) - ID of the user
-+ name: `Dr. John Smith` (required, string) - Name of the user
-
-## User (UserCore)
-+ username: `jsmith` (required, string)
 
 ## Instruction
 + instruction (enum) - Represents the type of instruction sent to the robot
@@ -84,17 +84,36 @@ This resource collects data on deliveries.
 This request takes in the IDs for the source and destination Targets and creates
 a new delivery in the server.
 
+The user must provide a valid bearer token, matching the sender's currently active token,
+to submit a delivery.
+
 The server responds with the newly created package object.
 
 + Request
 
+      + Headers
+
+            Authorization: Bearer 8aHjr65ULEZItDm7eEeoHwO55CDnbgdJ
+
       + Attributes (PackageCore)
           + from: `23` (required, number) - ID of departure Target
           + to: `12` (required, number) - ID of arrival Target
+          + sender: `jdoe` (required, string) - Username of sender User
+          + receiver: `drseuss` (required, string) - Username of receiver User
 
 + Response 200
 
       + Attributes (array[Delivery])
+
++ Response 400
+
+      + Attributes (BadRequestError)
+          + friendly: `There's no user with that username`
+
++ Response 403
+
+      + Attributes (ForbiddenError)
+          + friendly: `The sender has to be yourself`
 
 ### Clear queue [DELETE]
 
@@ -271,6 +290,36 @@ Allows the user to register. Returns a bearer token if successful.
 
       + Attributes (UnauthenticatedError)
           + friendly: `Incorrect user/password combination`
+
+# Group Verification
+This resource exposes the QR verification challenge route.
+
+## Verify [/verify]
+
+### Send challenge [POST]
+This route sends the token read from the QR code alongside a bearer token in the authorization
+header.
+
++ Request with challenge token
+
+    + Headers
+
+            Authorization: Bearer 8aHjr65ULEZItDm7eEeoHwO55CDnbgdJ
+
+    + Attributes
+        + token: `4qMNg0gToH`
+
++ Response 200
+
++ Response 400
+
+    + Attributes(BadRequestError)
+        + friendly: `Invalid delivery state`
+
++ Response 403
+
+    + Attributes(ForbiddenError)
+        + friendly: `Challenge failed. Check your bearer and challenge tokens`
 
 # Group Robot
 This resource group exposes the required routes for the vision system to interface with the robot.
