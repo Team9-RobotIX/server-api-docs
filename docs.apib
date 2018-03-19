@@ -27,6 +27,7 @@ Authentication is checked by validating the bearer token in `Authorization` head
 + sender: `jdoe` (required, string)
 + receiver: `drseuss` (required, string)
 + packageList (array[Package])
++ robot: `0` (number) - Once the delivery is underway, this contains the robot it has been assigned to.
 
 ## PackageCore
 + name: `Blood sample` (required, string)
@@ -41,15 +42,6 @@ Authentication is checked by validating the bearer token in `Authorization` head
 + name: `Reception` (required, string) - Name of the target
 + description: `The first-floor reception in Block A` (string) - Description of the target
 + color: `red` (required, nullable) - Color of the target
-
-## Instruction
-+ instruction (enum) - Represents the type of instruction sent to the robot
-    + MOVE - Orders the robot to move forward.
-    + TURN - Orders the robot to turn. Payload denotes the target bearing, in degrees, from `-180` to `180`
-+ value: `100` - Represents the payload associated with the instruction. Some instructions may ignore this payload.
-
-## Correction
-+ angle: `-10` (number, required) - New angular correction
 
 ## BadRequestError
 + code: `400` (number, required)
@@ -140,10 +132,17 @@ Partially updates the resource, replacing the supplied fields with the new ones.
 
 Valid fields to update are: `state`.
 
-+ Request with new state
++ Request for a delivery in queue that is now underway
 
       + Attributes
-          + state: `IN_PROGRESS`
+          + state: `MOVING_TO_SOURCE`
+          + robot: `0`
+
++ Request for other patches, except authentications
+
+      + Attributes
+          + state: `MOVING_TO_SOURCE`
+          + robot: `0`
 
 + Response 200
 
@@ -153,6 +152,11 @@ Valid fields to update are: `state`.
 
       + Attributes (BadRequestError)
           + friendly: `Delivery object is malformed.`
+
++ Response 403
+
+      + Attributes (ForbiddenError)
+          + friendly: `Illegal state transition attempted.`
 
 + Response 404
 
@@ -291,14 +295,200 @@ Allows the user to register. Returns a bearer token if successful.
       + Attributes (UnauthenticatedError)
           + friendly: `Incorrect user/password combination`
 
-# Group Verification
-This resource exposes the QR verification challenge route.
+# Group Robot
+This resource group exposes the required routes for the vision system to interface with the robot. All robot routes require passing a robot ID. In the current system, there's only one robot available (ID 0).
 
-## Verify [/verify]
+### Batch retrieval [GET /robot/{robotid}/instructions/batch{?limit}]
+Makes a single, batch retrieval of instructions (limited by a number) joined with the correction parameter, if any.
+This route is mean to avoid the overhead of two requests being issued by the robot, seeing that it has very limited
+connectivity capabilities.
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+    + limit: `1` (number, optional) - The maximum number of instructions to return
+
++ Response 200
+
+    + Attributes
+        + angle: `50.0`
+        + correction: `4.5`
+        + motor: true
+        + distance: `250.0`
+        + challenge_token: `4qMNg0gToH` - Only shown if awaiting authentication.
+        + delivery (Delivery)
+
+## Correction [/robot/{robotid}/correction]
+Exposes a mechanism to issue angle corrections to the robot.
+
+### Retrieve correction [GET]
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+
++ Response 200
+
+    + Attributes
+        + correction: `4.5`
+
+### Issue a correction [POST]
+Issues a new correction to the angle of the robot. If a correction has already been issued, returns an error.
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+
++ Request
+
+    + Attributes
+        + correction: `4.5`
+
++ Response 200
+
+    + Attributes
+        + correction: `4.5`
+
++ Response 400
+
+    + Attributes (BadRequestError)
+        + friendly: `Invalid correction angle.`
+
+## Angle [/robot/{robotid}/angle]
+Exposes a mechanism to issue angles to the robot.
+
+### Retrieve angle [GET]
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+
++ Response 200
+
+    + Attributes
+        + angle: `100.0`
+
+### Issue an angle [POST]
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+
++ Request
+
+    + Attributes
+        + angle: `100.0`
+
++ Response 200
+
+    + Attributes
+        + angle: `100.0`
+
++ Response 400
+
+    + Attributes (BadRequestError)
+        + friendly: `Invalid angle supplied.`
+
+## Distance [/robot/{robotid}/distance]
+Exposes a mechanism to issue moving distances to the robot.
+
+### Retrieve distance [GET]
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+
++ Response 200
+
+    + Attributes
+        + distance: `40.0`
+
+### Issue a distance [POST]
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+
++ Request
+
+    + Attributes
+        + distance: `40.0`
+
++ Response 200
+
+    + Attributes
+        + distance: `40.0`
+
++ Response 400
+
+    + Attributes (BadRequestError)
+        + friendly: `Invalid distance supplied.`
+
+## Motor [/robot/{robotid}/motor]
+Exposes a mechanism to turn the robot on and off.
+
+### Retrieve motor state [GET]
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+
++ Response 200
+
+    + Attributes
+        + motor: false
+
+### Issue a new motor state [POST]
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+
++ Request
+
+    + Attributes
+        + motor: true
+
++ Response 200
+
+    + Attributes
+        + motor: true
+
++ Response 400
+
+    + Attributes (BadRequestError)
+        + friendly: `Invalid motor state supplied.`
+
+## Locking [/robot/{robotid}/lock]
+Exposes the state of the locking mechanism, for reading or modification.
+
+### GET
+Meant to be polled by the robot.
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+
++ Response 200
+
+    + Attributes
+        + locked: `false` - Boolean value indicating whether the lock is engaged.
+
+### POST
+Updates the lock state.
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+
++ Request
+
+    + Attributes
+        + locked: `false` - Boolean value indicating whether the lock is engaged.
+
++ Response 200
+
+    + Attributes
+        + locked: `false` - Boolean value indicating whether the lock is engaged.
+
+## Verify [/robot/{robotid}/verify]
+This resource exposes the QR verification challenge route.
 
 ### Send challenge [POST]
 This route sends the token read from the QR code alongside a bearer token in the authorization
 header.
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
 
 + Request with challenge token
 
@@ -313,146 +503,10 @@ header.
 
 + Response 400
 
-    + Attributes(BadRequestError)
+    + Attributes (BadRequestError)
         + friendly: `Invalid delivery state`
 
 + Response 403
 
     + Attributes(ForbiddenError)
         + friendly: `Challenge failed. Check your bearer and challenge tokens`
-
-# Group Robot
-This resource group exposes the required routes for the vision system to interface with the robot.
-
-## Instructions [/instructions{?limit}]
-Exposes the current instruction issued to the robot, for reading or modification.
-
-### Retrieve instruction queue [GET]
-
-+ Response 200
-
-    + Attributes (array[Instruction])
-
-### Add instruction(s) to queue [POST]
-Appends one or more instructions to the queue.
-
-+ Request with a single instruction
-
-    + Attributes (Instruction)
-
-+ Request with multiple instructions
-
-    + Attributes (array[Instruction])
-
-+ Response 200
-
-    + Attributes (array[Instruction])
-
-### Clear entire instruction queue [DELETE]
-
-+ Response 200
-
-    + Attributes (array)
-
-### Batch retrieval [GET /instructions/batch{?limit}]
-Makes a single, batch retrieval of instructions (limited by a number) joined with the correction parameter, if any.
-This route is mean to avoid the overhead of two requests being issued by the robot, seeing that it has very limited
-connectivity capabilities.
-
-+ Parameters
-    + limit: `1` (number, optional) - The maximum number of instructions to return
-
-+ Response 200
-
-    + Attributes
-        + target (array[Instruction])
-        + correction
-            + angle: `-10`
-        + challenge_token: `4qMNg0gToH` - Only shown if awaiting authentication.
-
-## Instruction [/instruction/{id}]
-Exposes the current instruction issued to the robot, for reading or modification.
-
-+ Parameters
-    + id: `0` - Specifies the index of the instruction in the queue
-
-### Retrieve instruction at index from queue [GET]
-This route is meant to be polled by the robot.
-
-+ Response 200
-
-    + Attributes (Instruction)
-
-+ Response 404
-
-    + Attributes (NoResourceError)
-        + friendly: `This instruction does not exist`
-
-### Remove instruction from queue [DELETE]
-Removes this instruction from the queue. Meant to be used by the robot once an instruction has been completed.
-
-+ Response 200
-
-## Correction [/correction]
-Exposes a mechanism to issue angle corrections to the robot.
-
-### Retrieve correction [GET]
-
-+ Response 200
-
-    + Attributes (Correction)
-
-+ Response 404
-
-    + Attributes (NoResourceError)
-        + friendly: `No correction has been issued!`
-
-### Issue a correction [POST]
-Issues a new correction to the angle of the robot. If a correction has already been issued, returns an error.
-
-+ Request
-
-    + Attributes (Correction)
-
-+ Response 200
-
-    + Attributes (Correction)
-
-+ Response 400
-
-    + Attributes (BadRequestError)
-        + friendly: `A correction has already been issued!`
-
-### Delete correction [DELETE]
-Should be used once the correction has been executed by the robot.
-
-+ Response 200
-
-+ Response 404
-
-    + Attributes (NoResourceError)
-        + friendly: `No correction has been issued!`
-
-## Locking [/lock]
-Exposes the state of the locking mechanism, for reading or modification.
-
-### GET
-Meant to be polled by the robot.
-
-+ Response 200
-
-    + Attributes
-        + locked: `false` - Boolean value indicating whether the lock is engaged.
-
-### POST
-Updates the lock state.
-
-+ Request
-
-    + Attributes
-        + locked: `false` - Boolean value indicating whether the lock is engaged.
-
-+ Response 200
-
-    + Attributes
-        + locked: `false` - Boolean value indicating whether the lock is engaged.
