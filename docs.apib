@@ -65,13 +65,13 @@ This resource group exposes the routes required by the app to access, modify, cr
 ## All deliveries [/deliveries]
 This resource collects data on deliveries.
 
-### GET
+### Gets list of deliveries [GET]
 
 + Response 200
 
       + Attributes (array[Delivery])
 
-### POST
+### Creates a delivery [POST]
 
 This request takes in the IDs for the source and destination Targets and creates
 a new delivery in the server.
@@ -453,8 +453,7 @@ Exposes a mechanism to turn the robot on and off.
 ## Locking [/robot/{robotid}/lock]
 Exposes the state of the locking mechanism, for reading or modification.
 
-### GET
-Meant to be polled by the robot.
+### Gets lock state [GET]
 
 + Parameters
     + robotid: `0` (number, required) - ID of the robot
@@ -464,8 +463,7 @@ Meant to be polled by the robot.
     + Attributes
         + locked: `false` - Boolean value indicating whether the lock is engaged.
 
-### POST
-Updates the lock state.
+### Updates the lock state [POST]
 
 + Parameters
     + robotid: `0` (number, required) - ID of the robot
