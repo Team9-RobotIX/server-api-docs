@@ -298,11 +298,42 @@ Allows the user to register. Returns a bearer token if successful.
 # Group Robot
 This resource group exposes the required routes for the vision system to interface with the robot. All robot routes require passing a robot ID. In the current system, there's only one robot available (ID 0).
 
-### Batch retrieval [GET /robot/{robotid}/batch]
+## Batch updates [/robot/{robotid}/batch]
+
+### Batch retrieval [GET]
 Makes a single, batch retrieval of all robot fields. This route is mean to avoid the overhead of two requests being issued by the robot, seeing that it has very limited connectivity capabilities.
 
 + Parameters
     + robotid: `0` (number, required) - ID of the robot
+
++ Response 200
+
+    + Attributes
+        + angle: `50.0`
+        + correction: `4.5`
+        + motor: true
+        + distance: `250.0`
+        + token: `4qMNg0gToH`
+        + delivery (Delivery)
+
+### Batch update [POST]
+Makes a batch update on some of the robots fields. Fields that can be updated in this way are: `correction`, `angle`, `motor` and `distance`.
+
++ Parameters
+    + robotid: `0` (number, required) - ID of the robot
+
++ Request with a single field
+
+    + Attributes
+        + angle: `50.0`
+
++ Request with all fields
+
+    + Attributes
+        + angle: `50.0`
+        + correction: `4.5`
+        + motor: true
+        + distance: `250.0`
 
 + Response 200
 
