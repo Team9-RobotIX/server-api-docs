@@ -313,8 +313,10 @@ Makes a single, batch retrieval of all robot fields. This route is mean to avoid
         + correction: `4.5`
         + motor: true
         + distance: `250.0`
-        + token: `4qMNg0gToH`
-        + delivery (Delivery)
+        + delivery - Shown only if the robot is currently tasked with transporting a delivery
+            + senderAuthToken: `GgkWGPKyCz` - The QR token that is shown to the sender for authentication
+            + receiverAuthToken: `5wx7kAhRaY` - The QR token that is shown to the receiver for authentication
+            + state: `MOVING_TO_SOURCE` - Current state of the delivery object the robot is carrying. The robot can monitor this so it knows when it should show the QR (and which one it should show)
 
 ### Batch update [POST]
 Makes a batch update on some of the robots fields. Fields that can be updated in this way are: `correction`, `angle`, `motor` and `distance`.
@@ -342,8 +344,10 @@ Makes a batch update on some of the robots fields. Fields that can be updated in
         + correction: `4.5`
         + motor: true
         + distance: `250.0`
-        + token: `4qMNg0gToH`
-        + delivery (Delivery)
+        + delivery - Shown only if the robot is currently tasked with transporting a delivery
+            + senderAuthToken: `GgkWGPKyCz` - The QR token that is shown to the sender for authentication
+            + receiverAuthToken: `5wx7kAhRaY` - The QR token that is shown to the receiver for authentication
+            + state: `MOVING_TO_SOURCE` - Current state of the delivery object the robot is carrying. The robot can monitor this so it knows when it should show the QR (and which one it should show)
 
 ## Correction [/robot/{robotid}/correction]
 Exposes a mechanism to issue angle corrections to the robot.
