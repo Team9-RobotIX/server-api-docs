@@ -29,6 +29,9 @@ Authentication is checked by validating the bearer token in `Authorization` head
 + packageList (array[Package])
 + robot: `0` (number) - Once the delivery is underway, this contains the robot it has been assigned to.
 
+## UserCore
++ name: `jsmith` (required, string)
+
 ## PackageCore
 + name: `Blood sample` (required, string)
 + description: `Blood sample for patient Jane Doe` (string)
@@ -171,6 +174,18 @@ Valid fields to update are: `state`.
 
       + Attributes (BadRequestError)
           + friendly: `There's no delivery with that ID!`
+
+# Group Users
+This resource group exposes the routes required by the app to obtain the user list.
+
+## All users [/users]
+This resource collects data on the whole collection of users.
+
+### Gets list of users [GET]
+
++ Response 200
+
+      + Attributes (array[UserCore])
 
 # Group Targets
 
